@@ -2,6 +2,7 @@ import express from "express";
 import {addTask ,completeTask , deleteTask , getTask, GetTaskByCompletion} from "./taskServices.js";
 import {auth} from "./middleWare.js"; 
 import pool from "./db.js";
+import {AppError} from "./error.js";
 const router = express.Router();
 
 router.use(auth);
@@ -24,7 +25,14 @@ router.get("/:id" , async (req , res) => {
 });
 
 router.post("/" , async (req , res)=>{
-    const newTask = await addTask(req.body.title);
+    const {title} = req.body;
+
+    if(typeof title !== "string" || title.trim()==="")
+    {
+        throw new AppError("title must be non empty string!!!",400);
+    }
+
+    const newTask = await addTask(title);
     res.status(201).json({
         message : "task created",
         task : newTask
