@@ -1,3 +1,5 @@
+//Initial app.js files to use the api from CLI
+
 import {addTask , listTasks , completeTask , deleteTask} from "./taskServices.js";
 switch(process.argv[2]){
     case "add":

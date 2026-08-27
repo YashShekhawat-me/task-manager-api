@@ -2,6 +2,8 @@ import pg from "pg";
 import "dotenv/config";
 const {Pool} = pg;
 
+
+//hidden database host username , passwords using .env file
 const pool = new Pool({
     user:process.env.DB_USER,
     host:process.env.DB_HOST,
