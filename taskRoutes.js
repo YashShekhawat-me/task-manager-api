@@ -1,6 +1,6 @@
 import express from "express";
-import {addTask ,completeTask , deleteTask , getTask, GetTaskByCompletion, listTasks} from "./taskServices.js";
-import {auth, ValidateTaskId} from "./middleWare.js"; 
+import {addTask ,completeTask , deleteTask , getTask, GetTaskByCompletion, listTasks, UpdateTask} from "./taskServices.js";
+import {auth, ValidatePatchBody, ValidateTaskId} from "./middleWare.js"; 
 import pool from "./db.js";
 import {AppError} from "./error.js";
 const router = express.Router();
@@ -49,10 +49,10 @@ router.post("/" , async (req , res)=>{
 });
 
 
-//handeling patch request sent to complete a specific task
-//validated using ValidateTaskId
-router.patch("/:id" , ValidateTaskId , async (req , res) => {
-    const task = await completeTask(req.TaskId);
+//handeling patch requests to update any key in any particular id 
+//vlaiding task id and the request body
+router.patch("/:id" , ValidateTaskId , ValidatePatchBody , async (req , res) => {
+    const task = await UpdateTask(req.TaskId , req.body);
     res.status(200).json(task); 
 });
 

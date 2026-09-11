@@ -43,5 +43,29 @@ export async function GetTaskByCompletion(completed){
 
 // servie to combine all patch requests 
 export async function UpdateTask(taskId , body){
+    const fields = [];
+    const values = [];
+    let queryParamNum = 1;
+    if(Object.hasOwn(body , "completed"))
+    {
+        fields.push("completed = $" + queryParamNum);
+        values.push(body.completed);
+        queryParamNum = queryParamNum + 1;
+    }
+    if(Object.hasOwn(body , "title"))
+    {
+        fields.push("title = $" + queryParamNum);
+        values.push(body.title);
+        queryParamNum = queryParamNum + 1;
+    }
+    values.push(taskId);
+    const SqlQuery = fields.join(", ");
+    const query = "UPDATE tasks " + "SET " +  SqlQuery + " where id = $" + queryParamNum + " RETURNING *";
 
+    const result = await pool.query(query , values);
+    if(result.rows.length === 0)
+    {
+        throw new AppError(" Error 404 Task Not Found" , 404);
+    }
+    return result.rows[0];
 }
