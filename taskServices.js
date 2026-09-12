@@ -17,13 +17,10 @@ export async function listTasks()
 //service to get task by id
 export async function getTask(taskId){
     const result = await pool.query("select * from tasks where id = $1" , [taskId]);
-    return result.rows[0];
-}
-
-// service to complete a task
-export async function completeTask(taskId)  
-{
-    const result =await pool.query("UPDATE tasks SET COMPLETED = TRUE WHERE ID = $1 RETURNING *" , [taskId]);
+    if(result.rows.length === 0)
+    {
+        throw new AppError("Task not found" , 404);
+    }
     return result.rows[0];
 }
 
@@ -31,6 +28,10 @@ export async function completeTask(taskId)
 export async function deleteTask(taskId)
 {
     const result = await pool.query("DELETE FROM tasks WHERE ID = $1 RETURNING *" , [taskId]);
+    if(result.rows.length === 0)
+    {
+        throw new AppError("Task not found" , 404);
+    }
     return result.rows[0];
 }
 

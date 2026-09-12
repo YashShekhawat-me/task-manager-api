@@ -12,6 +12,7 @@ export class AppError extends Error{
 //if the error is unknown senb status 500
 export function errorHandeler( error, req, res, next ){
     if(error instanceof AppError){
+        console.log("error code:"+error.status + " " + error.message);
         return res.status(error.status).json({
             message : error.message , 
             successfull : false

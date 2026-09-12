@@ -8,8 +8,7 @@ const app = express();
 
 //middlewares
 
-
-//middleware to tell that our request are going to be json 
+//middleware to automatically parse incoming json request bodies in normal javascript objects
 app.use(express.json());
 
 //assigining time to every request

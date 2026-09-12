@@ -85,3 +85,17 @@ export function ValidatePatchBody(req , res , next){
     // a valid object will be passed which will contain title or completed or both
     next();
 }
+
+//service to validate post body
+export function validatePostBody(req , res , next){
+    if(typeof req.body !== "object" || req.body == null || Array.isArray(req.body)){
+        throw new AppError("request body must be an object" , 400);
+    }
+
+    const {title} = req.body;
+    
+    if(typeof title !== "string" || title.trim().length === 0 || title.trim().length>100){
+        throw new AppError("title must be between 1 to 100 character" , 400);
+    }
+    next();
+}
