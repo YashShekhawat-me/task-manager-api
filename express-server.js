@@ -2,6 +2,7 @@
 import express from "express";
 import taskRoutes from "./taskRoutes.js";
 import { errorHandeler} from "./error.js";
+import { attachTimeToRequest , displayOnCli, errorTest, testTime } from "./server-services.js";
 
 //starting express in the js file
 const app = express();
@@ -12,32 +13,19 @@ const app = express();
 app.use(express.json());
 
 //assigining time to every request
-app.use((req, res, next) => {
-    req.requestTime = new Date();
-    next();
-});
+app.use(attachTimeToRequest);
 
 //display on cli every request type and url
-app.use((req, res, next) => {
-    console.log("Request received:", req.method, req.url);
-    next();
-});
+app.use(displayOnCli);
 
 //taking every req that starts with /tasks to taskroutes
 app.use("/tasks" ,taskRoutes);
 
 //to check if the time middleware is working
-app.get("/testTime" , (req , res) => {
-    res.json({
-        time : req.requestTime
-    });
-});
+app.get("/testTime" , testTime);
 
 //to understand the how the errors are handled
-app.get("/error-test", (req, res, next) => {
-    const error = new Error("Something broke");
-    next(error);
-});
+app.get("/error-test", errorTest);
 
 //the home directory or the base directory so it shows a welcoming message
 app.get("/" , (req , res) => {

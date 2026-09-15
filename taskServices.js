@@ -1,22 +1,23 @@
 import pool from "./db.js";
 import {AppError} from "./error.js"
+import { addTaskRepo, deleteById, getTaskByCompletionRepo, getTaskById, listTaskRepo, updateTaskRepo } from "./repository.js";
 
 //service to add task in database
 export async function addTask(taskTitle){
-    const result = await pool.query("INSERT INTO tasks (title) VALUES ($1) RETURNING *" , [taskTitle]);
+    const result = await addTaskRepo(taskTitle);
     return result.rows[0];
 }
 
 //service used to list task by fetching it from database using sql queries
 export async function listTasks()
 {
-    const result = await pool.query("select * from tasks");
+    const result = await listTaskRepo();
     return result.rows;
 }
 
 //service to get task by id
 export async function getTask(taskId){
-    const result = await pool.query("select * from tasks where id = $1" , [taskId]);
+    const result = await getTaskById(taskId);
     if(result.rows.length === 0)
     {
         throw new AppError("Task not found" , 404);
@@ -27,7 +28,7 @@ export async function getTask(taskId){
 //service to delete a task
 export async function deleteTask(taskId)
 {
-    const result = await pool.query("DELETE FROM tasks WHERE ID = $1 RETURNING *" , [taskId]);
+    const result = await deleteById(taskId);
     if(result.rows.length === 0)
     {
         throw new AppError("Task not found" , 404);
@@ -37,33 +38,16 @@ export async function deleteTask(taskId)
 
 //service to filter tasks based on its completion state
 export async function GetTaskByCompletion(completed){
-    const result = await pool.query("select * from tasks where completed = $1" , [completed]);
+    const result = await getTaskByCompletionRepo(completed);
     return result.rows;
-} 
+}
 
 
-// servie to combine all patch requests 
+// service to combine all patch requests 
 export async function UpdateTask(taskId , body){
-    const fields = [];
-    const values = [];
-    let queryParamNum = 1;
-    if(Object.hasOwn(body , "completed"))
-    {
-        fields.push("completed = $" + queryParamNum);
-        values.push(body.completed);
-        queryParamNum = queryParamNum + 1;
-    }
-    if(Object.hasOwn(body , "title"))
-    {
-        fields.push("title = $" + queryParamNum);
-        values.push(body.title);
-        queryParamNum = queryParamNum + 1;
-    }
-    values.push(taskId);
-    const SqlQuery = fields.join(", ");
-    const query = "UPDATE tasks " + "SET " +  SqlQuery + " where id = $" + queryParamNum + " RETURNING *";
+    
 
-    const result = await pool.query(query , values);
+    const result = await updateTaskRepo(taskId , body);
     if(result.rows.length === 0)
     {
         throw new AppError(" Error 404 Task Not Found" , 404);

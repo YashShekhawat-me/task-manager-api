@@ -1,12 +1,11 @@
 import express from "express";
-import { deleteTask , GetTaskByCompletion, listTasks} from "./taskServices.js";
 import {auth, ValidatePatchBody, validatePostBody, ValidateTaskId} from "./middleWare.js"; 
 import {getTaskController, postTaskController, updateTaskControllers , getAllTaskController, getTaskByCompletionController, deleteTaskController} from "./task-controller.js";
 const router = express.Router();
 
 
 //using authorization function 
-router.use(auth);
+// router.use(auth);
 
 
 // handeling get all tasks req
