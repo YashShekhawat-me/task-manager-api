@@ -26,16 +26,15 @@ export async function postTaskController(req , res)
 //controller for the get all task request
 export async function getAllTaskController(req , res)
 {
-    res.json(await listTasks());
+    res.json(await listTasks( req.completed, req.limit , req.offset));
 }
 
 //controller for the get request by filter
 export async function getTaskByCompletionController(req , res)
 {
-    const completed = req.query.completed === "true";
     res.status(200).json({
         message: "requested task",
-        tasks: await GetTaskByCompletion(completed)
+        tasks: await GetTaskByCompletion(req.completed)
     });
 }
 

@@ -12,8 +12,24 @@ export async function deleteById(taskId){
     return await pool.query("DELETE FROM tasks WHERE ID = $1 RETURNING *" , [taskId]);
 }
 
-export async function listTaskRepo(){
-    return await pool.query("select * from tasks");
+export async function listTaskRepo(completed , limit , offset){
+    // return await pool.query("select * from tasks limit $1 offset $2" , [limit , offset]);
+    const conditions = [];
+    const values = [];
+    let queryParamNum = 1;
+    if(completed !== undefined){
+        conditions.push("where completed = $" + queryParamNum);
+        queryParamNum++;
+        values.push(completed);
+    }
+    conditions.push("limit $" + queryParamNum);
+    values.push(limit);
+    queryParamNum++;
+    conditions.push("offset $" + queryParamNum);
+    values.push(offset);
+    const sqlQuery = conditions.join(" ");
+    const query = "select * from tasks " + sqlQuery;
+    return await pool.query(query , values);
 }
 
 export async function getTaskByCompletionRepo(completed){

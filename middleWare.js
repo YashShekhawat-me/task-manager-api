@@ -99,3 +99,68 @@ export function validatePostBody(req , res , next){
     }
     next();
 }
+
+export function validateCompleteQuery(req , res , next){
+    if(req.query.completed === undefined){
+        throw new AppError("completed not supplied" , 400);
+    }
+    if(req.query.completed === "true"){
+        req.completed = true;
+    } else if(req.query.completed === "false"){
+        req.completed = false;
+    } else {
+        throw new AppError("Invalid Query parameters" , 400);
+    }
+    next();
+}
+export function validateCompleteQuery1(req , res , next){
+    if(req.query.completed === undefined){
+        return next();
+    }
+    if(req.query.completed === "true"){
+        req.completed = true;
+    } else if(req.query.completed === "false"){
+        req.completed = false;
+    } else {
+        throw new AppError("Invalid Query parameters" , 400);
+    }
+    next();
+}
+
+export function validateLimit(req , res , next){
+    if(req.query.limit === undefined){
+        req.limit = 20;
+        return next();
+    }
+    const l = Number(req.query.limit);
+    if(Number.isNaN(l)){
+        throw new AppError("limit should be number" , 400);
+    } else if(!Number.isInteger(l)){
+        throw new AppError("limit must be an integer" , 400);
+    } else if (l <= 0){
+        throw new AppError("limit must be positive" , 400);
+    }else if(l >100){
+        throw new AppError("limit should be less then 100" , 400);
+    } else {
+        req.limit = l;
+    }
+    next();
+}
+
+export function validateOffset(req, res ,next){
+    if(req.query.offset === undefined){
+        req.offset = 0;
+        return next();
+    }
+    const o = Number(req.query.offset);
+    if(Number.isNaN(o)){
+        throw new AppError("offset should be an integer" , 400);
+    } else if (!Number.isInteger(o)){
+        throw new AppError("offset must be an integer" , 400);
+    } else if(o < 0){
+        throw new AppError("offset should be greater then or equal to 0" , 400);
+    } else {
+        req.offset = o;
+    }
+    next();
+}   
