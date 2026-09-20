@@ -7,7 +7,6 @@ const router = express.Router();
 //using authorization function 
 // router.use(auth);
 
-
 // handeling get all tasks req
 router.get("/" ,validateCompleteQuery1 , validateLimit , validateOffset , getAllTaskController);
 

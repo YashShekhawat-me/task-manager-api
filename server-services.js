@@ -4,7 +4,7 @@ export function attachTimeToRequest(req , res , next){
 }
 
 export function displayOnCli(req , res, next){
-    console.log("request recieved:" , req.method , req.url);
+    console.log("request recieved:" , req.method , req.url );
     next();
 }
 

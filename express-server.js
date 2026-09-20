@@ -3,12 +3,15 @@ import express from "express";
 import taskRoutes from "./taskRoutes.js";
 import { errorHandeler} from "./error.js";
 import { attachTimeToRequest , displayOnCli, errorTest, testTime } from "./server-services.js";
+import responseTime from "response-time";
 
 //starting express in the js file
 const app = express();
 
 //middlewares
-
+app.use(responseTime((req, res, time) => {
+  console.log(`[${req.method}] ${req.url} - ${time.toFixed(2)}ms`);
+}));
 //middleware to automatically parse incoming json request bodies in normal javascript objects
 app.use(express.json());
 
