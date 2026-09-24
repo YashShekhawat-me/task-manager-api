@@ -26,7 +26,7 @@ export async function postTaskController(req , res)
 //controller for the get all task request
 export async function getAllTaskController(req , res)
 {
-    res.json(await listTasks( req.completed, req.limit , req.offset));
+    res.json(await listTasks( req.completed, req.limit , req.offset , req.sort , req.order , req.search));
 }
 
 //controller for the get request by filter

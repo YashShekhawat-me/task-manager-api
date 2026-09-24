@@ -1,5 +1,5 @@
 import express from "express";
-import {auth, validateCompleteQuery, validateCompleteQuery1, validateLimit, validateOffset, ValidatePatchBody, validatePostBody, ValidateTaskId} from "./middleWare.js"; 
+import {auth, validateCompleteQuery, validateCompleteQuery1, validateLimit, validateOffset, ValidatePatchBody, validatePostBody, validateSearch, validateSortAndOrder, ValidateTaskId} from "./middleWare.js"; 
 import {getTaskController, postTaskController, updateTaskControllers , getAllTaskController, getTaskByCompletionController, deleteTaskController} from "./task-controller.js";
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 // router.use(auth);
 
 // handeling get all tasks req
-router.get("/" ,validateCompleteQuery1 , validateLimit , validateOffset , getAllTaskController);
+router.get("/" ,validateSortAndOrder , validateSearch , validateCompleteQuery1 , validateLimit , validateOffset , getAllTaskController);
 
 
 // filter task by completion using GetTaskByCompletion

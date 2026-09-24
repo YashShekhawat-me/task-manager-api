@@ -9,9 +9,9 @@ export async function addTask(taskTitle){
 }
 
 //service used to list task by fetching it from database using sql queries
-export async function listTasks(completed , limit , offset)
+export async function listTasks(completed , limit , offset , sort , order , search)
 {
-    const result = await listTaskRepo(completed ,limit , offset);
+    const result = await listTaskRepo(completed ,limit , offset , sort , order , search);
     return result.rows;
 }
 

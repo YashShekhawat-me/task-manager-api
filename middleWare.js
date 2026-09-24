@@ -100,6 +100,7 @@ export function validatePostBody(req , res , next){
     next();
 }
 
+//for filter
 export function validateCompleteQuery(req , res , next){
     if(req.query.completed === undefined){
         throw new AppError("completed not supplied" , 400);
@@ -113,11 +114,12 @@ export function validateCompleteQuery(req , res , next){
     }
     next();
 }
+
+//for query in get all tasks
 export function validateCompleteQuery1(req , res , next){
     if(req.query.completed === undefined){
         return next();
-    }
-    if(req.query.completed === "true"){
+    } else if(req.query.completed === "true"){
         req.completed = true;
     } else if(req.query.completed === "false"){
         req.completed = false;
@@ -127,6 +129,7 @@ export function validateCompleteQuery1(req , res , next){
     next();
 }
 
+//validate limit for queries
 export function validateLimit(req , res , next){
     if(req.query.limit === undefined){
         req.limit = 20;
@@ -147,6 +150,7 @@ export function validateLimit(req , res , next){
     next();
 }
 
+//validate offset for queries
 export function validateOffset(req, res ,next){
     if(req.query.offset === undefined){
         req.offset = 0;
@@ -164,3 +168,43 @@ export function validateOffset(req, res ,next){
     }
     next();
 }   
+
+//validates sort and order
+export function validateSortAndOrder(req , res , next){
+    if(req.query.sort === undefined && req.query.order === undefined){
+        return next();
+    } else if (req.query.sort === undefined && req.query.order !== undefined){
+        throw new AppError("order only allowed with sort" , 400);
+    } else {
+        if(req.query.sort === "id"){
+            req.sort = "id";
+        } else if(req.query.sort === "title"){
+            req.sort = "title";
+        } else {
+            throw new AppError("invalid sort argument" , 400);
+        }
+        if(req.query.order === undefined){
+            req.order = "asc";
+        } else if(req.query.order === "asc"){
+            req.order = "asc";
+        } else if(req.query.order === "desc"){
+            req.order = "desc";
+        } else {
+            throw new AppError("invalid order argument" , 400);
+        }
+    }
+    next();
+}
+
+export function validateSearch(req ,res, next){
+    if(req.query.search === undefined){
+        return next();
+    } else {
+        const search = req.query.search;
+        if(search.trim().length === 0){
+            throw new AppError("search can not be empty" , 400);
+        }
+        req.search = search.trim();
+    }
+    next();
+}

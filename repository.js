@@ -12,23 +12,38 @@ export async function deleteById(taskId){
     return await pool.query("DELETE FROM tasks WHERE ID = $1 RETURNING *" , [taskId]);
 }
 
-export async function listTaskRepo(completed , limit , offset){
-    // return await pool.query("select * from tasks limit $1 offset $2" , [limit , offset]);
+export async function listTaskRepo(completed , limit , offset , sort , order , search){
     const conditions = [];
+    const snlo = [];
     const values = [];
     let queryParamNum = 1;
     if(completed !== undefined){
-        conditions.push("where completed = $" + queryParamNum);
+        conditions.push("completed = $" + queryParamNum);
         queryParamNum++;
         values.push(completed);
     }
-    conditions.push("limit $" + queryParamNum);
+    if(sort !== undefined){
+        snlo.push("order by " + sort + " " + order);
+    }
+    if(search !== undefined){
+        conditions.push("title ILIKE $" + queryParamNum);
+        values.push(`%${search}%`);
+        queryParamNum++;
+    }
+    snlo.push("limit $" + queryParamNum);
     values.push(limit);
     queryParamNum++;
-    conditions.push("offset $" + queryParamNum);
+    snlo.push("offset $" + queryParamNum);
     values.push(offset);
-    const sqlQuery = conditions.join(" ");
-    const query = "select * from tasks " + sqlQuery;
+    const conditionsQuery = " where " + conditions.join(" and ");
+    const snloQuery = snlo.join(" ");
+    let query;
+    if(conditions.length === 0){
+        query =   "select * from tasks " + snloQuery + ";"
+    } else {
+        query = "select * from tasks" + conditionsQuery + " " + snloQuery + ";" ;
+    }
+    console.log(query);
     return await pool.query(query , values);
 }
 
