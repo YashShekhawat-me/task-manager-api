@@ -43,7 +43,6 @@ export async function listTaskRepo(completed , limit , offset , sort , order , s
     } else {
         query = "select * from tasks" + conditionsQuery + " " + snloQuery + ";" ;
     }
-    console.log(query);
     return await pool.query(query , values);
 }
 
