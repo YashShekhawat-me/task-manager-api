@@ -100,23 +100,8 @@ export function validatePostBody(req , res , next){
     next();
 }
 
-//for filter
-export function validateCompleteQuery(req , res , next){
-    if(req.query.completed === undefined){
-        throw new AppError("completed not supplied" , 400);
-    }
-    if(req.query.completed === "true"){
-        req.completed = true;
-    } else if(req.query.completed === "false"){
-        req.completed = false;
-    } else {
-        throw new AppError("Invalid Query parameters" , 400);
-    }
-    next();
-}
-
 //for query in get all tasks
-export function validateCompleteQuery1(req , res , next){
+export function validateCompleteQuery(req , res , next){
     if(req.query.completed === undefined){
         return next();
     } else if(req.query.completed === "true"){
@@ -172,6 +157,8 @@ export function validateOffset(req, res ,next){
 //validates sort and order
 export function validateSortAndOrder(req , res , next){
     if(req.query.sort === undefined && req.query.order === undefined){
+        req.sort = "id";
+        req.order = "asc";
         return next();
     } else if (req.query.sort === undefined && req.query.order !== undefined){
         throw new AppError("order only allowed with sort" , 400);
@@ -201,6 +188,9 @@ export function validateSearch(req ,res, next){
         return next();
     } else {
         const search = req.query.search;
+        if(typeof search !== "string"){
+            throw new AppError("search must be a string" , 400);
+        }
         if(search.trim().length === 0){
             throw new AppError("search can not be empty" , 400);
         }

@@ -2,12 +2,12 @@
   "name": "task_manager",
   "version": "1.0.0",
   "description": "a task manager ",
-  "main": "app.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node --watch app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
   },
   "author": "yash",
   "license": "ISC",
@@ -16,5 +16,13 @@
     "express": "^5.2.1",
     "pg": "^8.23.0",
     "response-time": "^2.3.4"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "supertest": "^7.3.1"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "unrs-resolver@1.12.2": true
   }
 }

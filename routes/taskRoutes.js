@@ -1,6 +1,6 @@
 import express from "express";
-import {auth, validateCompleteQuery, validateCompleteQuery1, validateLimit, validateOffset, ValidatePatchBody, validatePostBody, validateSearch, validateSortAndOrder, ValidateTaskId} from "./middleWare.js"; 
-import {getTaskController, postTaskController, updateTaskControllers , getAllTaskController, getTaskByCompletionController, deleteTaskController} from "./task-controller.js";
+import {auth, validateCompleteQuery, validateLimit, validateOffset, ValidatePatchBody, validatePostBody, validateSearch, validateSortAndOrder, ValidateTaskId} from "../middleWares/middleWare.js"; 
+import {getTaskController, postTaskController, updateTaskControllers , getAllTaskController, deleteTaskController} from "../controllers/task-controller.js";
 const router = express.Router();
 
 
@@ -8,11 +8,7 @@ const router = express.Router();
 // router.use(auth);
 
 // handeling get all tasks req
-router.get("/" ,validateSortAndOrder , validateSearch , validateCompleteQuery1 , validateLimit , validateOffset , getAllTaskController);
-
-
-// filter task by completion using GetTaskByCompletion
-router.get("/filter" , validateCompleteQuery ,getTaskByCompletionController);
+router.get("/" ,validateSortAndOrder , validateSearch , validateCompleteQuery , validateLimit , validateOffset , getAllTaskController);
 
 
 // handeling get request by id 

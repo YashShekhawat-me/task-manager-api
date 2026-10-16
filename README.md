@@ -1,182 +1,197 @@
 # Task Manager API
 
-A RESTful Task Manager API built with **Node.js**, **Express 5**, and **PostgreSQL**. It exposes CRUD endpoints for managing tasks, with request validation, filtering/sorting/pagination/search on listing, request timing, and centralized error handling.
+A lightweight REST API for managing tasks with Node.js, Express, and PostgreSQL.
+
+## Overview
+
+This project exposes CRUD endpoints for a task list and keeps the database access separated from the HTTP layer. The app validates request bodies and query parameters, logs response times, and returns consistent JSON errors.
 
 ## Features
 
 - Create, read, update, and delete tasks
-- List tasks with filtering (by completion), search, sorting, and pagination
-- Filter tasks by completion status via a dedicated endpoint
-- Request body and query-param validation
-- Task ID validation on route params
-- Response-time logging on every request
-- Centralized error handling via a custom `AppError` class
-- PostgreSQL persistence via the `pg` driver, with queries isolated in a repository layer
+- List tasks with filtering, search, sorting, pagination, and count metadata
+- Validate IDs, request bodies, and query parameters
+- Centralized error handling with custom application errors
+- PostgreSQL persistence through the `pg` library
+- Response-time logging for each request
 
 ## Tech Stack
 
-- **Runtime:** Node.js (ES Modules)
-- **Framework:** Express 5
-- **Database:** PostgreSQL (via `pg`)
-- **Config:** `dotenv`
-- **Logging:** `response-time`
+- Node.js
+- Express 5
+- PostgreSQL
+- `pg` client for PostgreSQL
+- `dotenv` for environment configuration
+- `response-time` for request logging
 
 ## Project Structure
 
+```text
+.
+├── db.js               # PostgreSQL connection pool
+├── error.js            # AppError and global error handler
+├── express-server.js    # Entry point for the Express app
+├── middleWare.js       # Request validation and auth middleware
+├── package.json        # Scripts and dependencies
+├── repository.js       # Raw SQL queries for task data
+├── task-controller.js  # HTTP controllers
+├── taskRoutes.js       # Route definitions for /tasks
+├── taskServices.js     # Business logic for task operations
+├── .env                # Local environment variables (not committed)
+├── .gitignore          # Ignored files
+├── README.md           # Project documentation
+└── test/               # Integration test folder (currently empty)
 ```
-task-manager-api/
-├── express-server.js    # App entry point — starts the Express server
-├── taskRoutes.js         # Route definitions for /tasks
-├── task-controller.js    # Request handlers (controllers)
-├── taskServices.js       # Business/service layer
-├── repository.js         # Raw SQL queries (data-access layer)
-├── middleWare.js         # Auth + request/query validation middleware
-├── server-services.js    # Misc route handlers (time, logging, error test)
-├── error.js              # AppError class + global error handler
-├── db.js                 # PostgreSQL connection pool
-├── app.js                 # Standalone CLI tool for tasks (separate from the API server)
-└── package.json
-```
-
-> **Notes on the current state of the repo:**
-> - `package.json`'s `start`/`dev` scripts point to `app.js`, which is a CLI script (`add`/`list`/`complete`/`delete` via `process.argv`), not the API server. To run the actual HTTP API, start `express-server.js` directly (see below).
-> - `app.js` imports a `completeTask` function from `taskServices.js`, but that function is no longer exported there (only `addTask`, `listTasks`, `getTask`, `deleteTask`, `GetTaskByCompletion`, `UpdateTask` are). The CLI tool's `complete` command is currently broken.
-> - The `auth` middleware still exists in `middleWare.js`, but `router.use(auth)` is **commented out** in `taskRoutes.js`. All `/tasks` routes are currently open with no auth check.
 
 ## Prerequisites
 
-- Node.js (v18+ recommended, since the project uses ES Modules)
-- A running PostgreSQL instance
+- Node.js 18+
+- PostgreSQL database instance
+- Access to a database user with privileges to create and query a `tasks` table
 
 ## Installation
 
 ```bash
-git clone https://github.com/YashShekhawat-me/task-manager-api.git
-cd task-manager-api
 npm install
 ```
 
-## Environment Variables
+## Environment Configuration
 
-Create a `.env` file in the project root (it's already git-ignored):
+Create a `.env` file in the project root:
 
 ```env
-DB_USER=your_pg_username
+DB_USER=postgres
 DB_HOST=localhost
-DB_NAME=your_database_name
-DB_PASSWORD=your_pg_password
+DB_NAME=task_manager
+DB_PASSWORD=your_password
 DB_PORT=5432
 ```
 
 ## Database Setup
 
-The API expects a `tasks` table. Create it manually before running the server:
+Create the `tasks` table in PostgreSQL:
 
 ```sql
 CREATE TABLE tasks (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    completed BOOLEAN NOT NULL DEFAULT false
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(100) NOT NULL,
+  completed BOOLEAN NOT NULL DEFAULT false
 );
 ```
 
-## Running the Server
+## Running the App
+
+Start the server with either of the following:
 
 ```bash
-node express-server.js
+npm start
 ```
 
-The server starts on **port 3000**. You should see:
+or:
 
+```bash
+npm run dev
 ```
-express server running on port 3000
-```
 
-Every request is logged to the console with its method, URL, and response time.
+The app listens on port `3000`.
 
-## Authentication
-
-An `auth` middleware (checking for an `Authorization: secret123` header) exists in `middleWare.js`, but it is **not currently wired into any route** — `/tasks` endpoints are open. If you re-enable `router.use(auth)` in `taskRoutes.js`, all `/tasks` requests will need that header.
-
-## API Reference
+## API Endpoints
 
 Base URL: `http://localhost:3000`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Welcome message |
-| GET | `/tasks` | List tasks — supports filtering, search, sort, and pagination |
-| GET | `/tasks/filter?completed=true\|false` | Get tasks filtered by completion (required param) |
-| GET | `/tasks/:id` | Get a single task by ID |
-| POST | `/tasks` | Create a new task |
-| PATCH | `/tasks/:id` | Update a task's `title` and/or `completed` status |
-| DELETE | `/tasks/:id` | Delete a task by ID |
-| GET | `/testTime` | Debug endpoint — returns the time the request was received |
-| GET | `/error-test` | Debug endpoint — throws a test error to exercise the error handler |
+### GET /
 
-### List tasks — query parameters
-
-`GET /tasks` accepts all of the following, combinable:
-
-| Param | Type | Default | Notes |
-|-------|------|---------|-------|
-| `completed` | `true` \| `false` | *(no filter)* | Optional here (required on `/tasks/filter`) |
-| `search` | string | *(none)* | Case-insensitive partial match on `title` |
-| `sort` | `id` \| `title` | *(unsorted)* | |
-| `order` | `asc` \| `desc` | `asc` | Only valid together with `sort` |
-| `limit` | integer, 1–100 | `20` | |
-| `offset` | integer, ≥ 0 | `0` | |
+Returns a welcome message.
 
 ```bash
-curl "http://localhost:3000/tasks?search=readme&sort=title&order=desc&limit=10"
+curl http://localhost:3000/
 ```
 
-### Create a task
+### GET /tasks
+
+Lists tasks with optional filtering and metadata.
+
+Query parameters:
+
+- `completed=true|false` — filter by completion status
+- `search=some text` — search in task title (case-insensitive partial match)
+- `sort=id|title` — sort field
+- `order=asc|desc` — sort direction
+- `limit=1..100` — max rows per page
+- `offset=0..n` — pagination offset
+
+Example:
+
+```bash
+curl "http://localhost:3000/tasks?completed=false&search=read&sort=title&order=desc&limit=10&offset=0"
+```
+
+### GET /tasks/:id
+
+Fetch a single task by ID.
+
+```bash
+curl http://localhost:3000/tasks/1
+```
+
+### POST /tasks
+
+Create a new task. Request body must contain a `title` string.
 
 ```bash
 curl -X POST http://localhost:3000/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title": "Write the README"}'
+  -d '{"title":"Write the README"}'
 ```
 
-### Get all tasks
+### PATCH /tasks/:id
 
-```bash
-curl http://localhost:3000/tasks
-```
-
-### Filter tasks by completion
-
-```bash
-curl "http://localhost:3000/tasks/filter?completed=true"
-```
-
-### Update a task
+Update a task's `title` and/or `completed` value.
 
 ```bash
 curl -X PATCH http://localhost:3000/tasks/1 \
   -H "Content-Type: application/json" \
-  -d '{"completed": true}'
+  -d '{"title":"Updated task title","completed":true}'
 ```
 
-### Delete a task
+### DELETE /tasks/:id
+
+Deletes a task by ID.
 
 ```bash
 curl -X DELETE http://localhost:3000/tasks/1
 ```
 
-## Validation Rules
+## Validation Behavior
 
-- `title` must be a non-empty string, 1–100 characters
-- `completed` must be a boolean
-- `PATCH` requests must include only `title` and/or `completed` — no other fields
-- Route `:id` params must be a positive integer
-- `/tasks/filter` requires `completed=true` or `completed=false`
-- `/tasks` list: `sort` must be `id` or `title`; `order` (if present) must be `asc` or `desc` and requires `sort`; `limit` must be an integer between 1 and 100; `offset` must be a non-negative integer; `search` (if present) can't be empty
+The middleware validates:
+
+- `id` must be a positive integer
+- `title` must be a string with length 1-100 characters
+- `completed` must be a boolean when provided
+- query param `completed` must be `true` or `false`
+- `sort` must be `id` or `title`
+- `order` must be `asc` or `desc`
+- `limit` must be an integer between 1 and 100
+- `offset` must be an integer greater than or equal to 0
+- `search` cannot be blank
+- PATCH bodies can only include `title` and/or `completed`
+
+## Authentication
+
+The project includes an `auth` middleware in `middleWare.js` that checks for:
+
+```http
+Authorization: secret123
+```
+
+However, it is currently not mounted in `taskRoutes.js`, so all `/tasks` routes are currently public. To enforce it, uncomment the routing line in `taskRoutes.js`.
 
 ## Error Handling
 
-Errors are returned as JSON in a consistent shape:
+The app uses a custom `AppError` class and a global error handler in `error.js`.
+
+Known errors return JSON in this format:
 
 ```json
 {
@@ -185,12 +200,25 @@ Errors are returned as JSON in a consistent shape:
 }
 ```
 
-Known errors (e.g. invalid input, missing task) return the appropriate status code (`400`, `404`). Unhandled errors return `500 internal server error`.
+Unhandled exceptions return a `500` response with a generic internal server error message.
 
-## Known Limitations
+## Notes
 
-- `/tasks` routes currently have no auth check — `router.use(auth)` is commented out in `taskRoutes.js`.
-- `app.js`'s CLI `complete` command is broken — it imports `completeTask` from `taskServices.js`, which no longer exports that function.
-- `package.json` scripts (`start`/`dev`) still point at `app.js` instead of `express-server.js`.
-- No automated tests are configured yet (`npm test` is a placeholder).
+- The `test/` folder is present but currently empty.
+- The server logs each request with method, path, and elapsed time.
+- The codebase currently follows a simple layered design:
+  - `taskRoutes.js` for routing
+  - `task-controller.js` for request handling
+  - `taskServices.js` for business logic
+  - `repository.js` for database queries
+  - `middleWare.js` for validation/auth
+
+## Example Workflow
+
+```bash
+curl -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title":"Pay rent"}'
+curl http://localhost:3000/tasks
+curl -X PATCH http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"completed":true}'
+curl -X DELETE http://localhost:3000/tasks/1
+```
 

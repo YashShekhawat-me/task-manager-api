@@ -1,4 +1,4 @@
-import {listTasks, UpdateTask , getTask , addTask , GetTaskByCompletion , deleteTask} from "./taskServices.js";
+import {listTasks, UpdateTask , getTask , addTask ,  deleteTask} from "../taskServices.js";
 
 //controller for the patch requests
 export async function updateTaskControllers(req , res){
@@ -16,7 +16,8 @@ export async function getTaskController(req , res)
 //controller for the post requests
 export async function postTaskController(req , res)
 {
-    const newTask = await addTask(req.body.title);
+    const title = req.body.title.trim();
+    const newTask = await addTask(title);
     res.status(201).json({
         message: "task created!!",
         task: newTask
@@ -29,14 +30,6 @@ export async function getAllTaskController(req , res)
     res.json(await listTasks( req.completed, req.limit , req.offset , req.sort , req.order , req.search));
 }
 
-//controller for the get request by filter
-export async function getTaskByCompletionController(req , res)
-{
-    res.status(200).json({
-        message: "requested task",
-        tasks: await GetTaskByCompletion(req.completed)
-    });
-}
 
 export async function deleteTaskController(req , res)
 {

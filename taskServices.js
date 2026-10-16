@@ -1,6 +1,5 @@
-import pool from "./db.js";
-import {AppError} from "./error.js"
-import { addTaskRepo, deleteById, getTaskByCompletionRepo, getTaskById, listTaskRepo, updateTaskRepo } from "./repository.js";
+import {AppError} from "./middleWares/error.js"
+import { addTaskRepo, deleteById, getTaskById, listTaskRepo, updateTaskRepo } from "./repository.js";
 
 //service to add task in database
 export async function addTask(taskTitle){
@@ -12,7 +11,7 @@ export async function addTask(taskTitle){
 export async function listTasks(completed , limit , offset , sort , order , search)
 {
     const result = await listTaskRepo(completed ,limit , offset , sort , order , search);
-    return result.rows;
+    return result;
 }
 
 //service to get task by id
@@ -35,13 +34,6 @@ export async function deleteTask(taskId)
     }
     return result.rows[0];
 }
-
-//service to filter tasks based on its completion state
-export async function GetTaskByCompletion(completed){
-    const result = await getTaskByCompletionRepo(completed);
-    return result.rows;
-}
-
 
 // service to combine all patch requests 
 export async function UpdateTask(taskId , body){
