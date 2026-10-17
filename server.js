@@ -1,6 +1,6 @@
 import app from "./app.js";
 
 // assigning the port
-app.listen(3000 , ()=>{
+app.listen(process.env.PORT || 3000 , ()=>{
     console.log("express server running on port 3000");
 });
