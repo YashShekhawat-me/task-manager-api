@@ -15,13 +15,15 @@ export function auth(req , res , next){
 
 //validatinng task id
 export function ValidateTaskId(req , res , next){
-    const id = Number(req.params.id);
-
-    if(!Number.isInteger(id) || id<=0){
-        throw new AppError("Invalid Task Id" , 400);
+    const {id: rawId} = req.params;
+    if(!/^\d+$/.test(rawId)){
+        throw new AppError("Task id can only contain digits" , 400);
+    }
+    const id = Number(rawId);
+    if(!Number.isSafeInteger(id) || id < 1 || id > 2147483647) {
+        throw new AppError("task id should be between 1 & 2147483647" , 400);
     }
     req.TaskId = id;
-
     next()
 }
 
@@ -83,6 +85,7 @@ export function ValidatePatchBody(req , res , next){
 
     //if all check passes then passed into next 
     // a valid object will be passed which will contain title or completed or both
+    req.body.title = req.body.title.trim();
     next();
 }
 

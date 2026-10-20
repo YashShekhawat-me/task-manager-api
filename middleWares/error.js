@@ -11,7 +11,9 @@ export class AppError extends Error{
 //the actual error handeler takes error as input and sends the error if that is known error
 //if the error is unknown senb status 500
 export function errorHandeler( error, req, res, next ){
-    console.log(error);
+    if(process.env.NODE_ENV !== "test") {
+        console.log(error);
+    }
     if(error instanceof SyntaxError && error.status === 400 && 'body' in error){
         return res.status(400).json({
             message: "Malformed JSON payload. Please verify your syntax",
@@ -23,6 +25,13 @@ export function errorHandeler( error, req, res, next ){
         return res.status(error.status).json({
             message : error.message , 
             successfull : false
+        });
+    }
+
+    if(error.status >= 400 && error.status < 500 && error.expose ){
+        return res.status(error.status).json({
+            message: error.message, 
+            successfull: false
         });
     }
 

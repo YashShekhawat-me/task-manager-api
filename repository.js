@@ -13,6 +13,9 @@ export async function deleteById(taskId){
 }
 
 export async function listTaskRepo(completed , limit , offset , sort , order , search){
+    const SORT_COLUMN = { id: "id" , title : "title"};
+    const ORDER_DIRECTIONS = {asc: "ASC" , desc: "DESC"};
+    
     //conditions that are in where clause
     const conditions = [];
     
@@ -36,7 +39,11 @@ export async function listTaskRepo(completed , limit , offset , sort , order , s
         queryParamNum2++;
     }
     
-    snlo.push("order by " + sort + " " + order);
+    if(!Object.hasOwn(SORT_COLUMN , sort) || !Object.hasOwn(ORDER_DIRECTIONS , order)){
+        throw new Error("invalid sort or order passed to repository");
+    }
+    let sort1 = sort == "id" ? "title" : "id";
+    snlo.push("order by " + SORT_COLUMN[sort] + " " +  ORDER_DIRECTIONS[order] + " , " + sort1 + " " + ORDER_DIRECTIONS[order]);
 
     //check if search is there
     if(search !== undefined){
@@ -75,13 +82,7 @@ export async function listTaskRepo(completed , limit , offset , sort , order , s
         query2 = "select count(*) from tasks" + cndQuery + ";";
     }
 
-      //return {"data": resQuery1 , "pagination" : {"limit" : limit , "offset" : offset , "total" : Number(resQuery2.rows[0].count)}};
-
     const resQuery2 = await pool.query(query2 ,values2);
-    // console.log(query1);
-    // console.log(resQuery1);
-    // console.log(query2);
-    // console.log(resQuery2);
 
     return {"data": resQuery1.rows , "pagination" : {"limit" : limit , "offset" : offset , "total" : Number(resQuery2.rows[0].count)}};
 

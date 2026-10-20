@@ -1,16 +1,23 @@
 //imports needed
 import express from "express";
 import taskRoutes from "./routes/taskRoutes.js";
-import { errorHandeler} from "./middleWares/error.js";
+import { AppError, errorHandeler} from "./middleWares/error.js";
 import responseTime from "response-time";
+import cors from "cors";
 
 //starting express in the js file
 const app = express();
 
+app.use(cors({
+    origin: "http://localhost:3000"
+}))
 //middlewares
-app.use(responseTime((req, res, time) => {
-  console.log(`[${req.method}] ${req.url} - ${time.toFixed(2)}ms`);
-}));
+if(process.env.NODE_ENV !== "test") {
+    app.use(responseTime((req, res, time) => {
+        console.log(`[${req.method}] ${req.url} - ${time.toFixed(2)}ms`);
+    }));
+}
+
 
 //middleware to automatically parse incoming json request bodies in normal javascript objects
 app.use(express.json());
@@ -26,6 +33,9 @@ app.get("/" , (req , res) => {
     });
 });
 
+app.use((req , res , next) => { 
+    return next(new AppError(`${req.path} path is not defined` , 404));
+})
 //error handeler so the client doesnt get our internal errors
 app.use(errorHandeler);
 
