@@ -42,7 +42,7 @@ export async function UpdateTask(taskId , body){
     const result = await updateTaskRepo(taskId , body);
     if(result.rows.length === 0)
     {
-        throw new AppError(" Error 404 Task Not Found" , 404);
+        throw new AppError("Error 404 Task Not Found" , 404);
     }
     return result.rows[0];
 }

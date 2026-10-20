@@ -44,7 +44,7 @@ export function ValidatePatchBody(req , res , next){
         //checking if anything except title or completed is provided
         if(num !== "title" && num !== "completed")
         {
-            throw new AppError("Ivalid body properties provided" , 400);
+            throw new AppError("Invalid body properties provided" , 400);
         }
         else
         {
