@@ -92,6 +92,33 @@ describe("get /tasks" , () => {
         expect(response.body.pagination.total).toBe(1);
     });
 
+    test("gets tasks with search, sorting, and pagination" , async () => {
+        const response = await request(app).get("/tasks?search=t&sort=title&order=asc&limit=1&offset=0");
+        expect(response.status).toBe(200);
+        expect(response.body.data.length).toBe(1);
+        expect(response.body.data[0].title).toBe("learn jest");
+        expect(response.body.pagination.limit).toBe(1);
+        expect(response.body.pagination.offset).toBe(0);
+        expect(response.body.pagination.total).toBe(2);
+    });
+
+    test("gets incomplete tasks with sorting and pagination" , async () => {
+        const response = await request(app).get("/tasks?completed=false&sort=title&order=desc&limit=1&offset=1");
+        expect(response.status).toBe(200);
+        expect(response.body.data.length).toBe(1);
+        expect(response.body.data[0].title).toBe("buy milk");
+        expect(response.body.pagination.limit).toBe(1);
+        expect(response.body.pagination.offset).toBe(1);
+        expect(response.body.pagination.total).toBe(2);
+    });
+
+    test("gets no tasks when search has no matches" , async () => {
+        const response = await request(app).get("/tasks?search=python");
+        expect(response.status).toBe(200);
+        expect(response.body.data.length).toBe(0);
+        expect(response.body.pagination.total).toBe(0);
+    });
+
     describe("get task by sort and order" , () => {
         test("sort all happy paths returns 200" , async() => {
             const res1 = await request(app).get("/tasks?sort=title&order=asc");
@@ -184,6 +211,12 @@ describe("get task by id",() => {
         expect(res6.status).toBe(400);
         expect(res6.body.message).toBe("Task id can only contain digits");
     });
+
+    test("get task that does not exist" , async() => {
+        const response = await request(app).get("/tasks/999");
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Task not found");
+    });
 });
 
 //creates then fetches task then deletes tasks
@@ -201,7 +234,62 @@ test("creates then fetches tasks" , async () => {
     expect(res1.status).toBe(404);
 });
 
+describe("post on /tasks" , () =>{
+    test("creates task with valid input" , async() => {
+        const res = await request(app).post("/tasks").send({title: "learn supertest"});
 
+        expect(res.status).toBe(201);
+        expect(res.body.message).toBe("task created!!");
+        expect(res.body.task.title).toEqual("learn supertest");
+        expect(res.body.task.id).toBeDefined();
+    });
+
+    test("creates task with invalid body type" , async () => {
+        const res = await request(app).post("/tasks").send("learn supertest");
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("request body must be an object");
+    });
+
+    test("creates task with null body" , async () => {
+        const res = await request(app).post("/tasks").send(null);
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("request body must be an object");
+    });
+    test("creates task with invalid body type" , async () => {
+        const res = await request(app).post("/tasks").send("learn supertest");
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("request body must be an object");
+    });
+
+    test("create a task with wrong title type" , async () => {
+        const res = await request(app).post("/tasks").send({title: true});
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("title must be between 1 to 100 character");
+    });
+
+    test("create a task with only spaces" , async () => {
+        const res = await request(app).post("/tasks").send({title:"            "});
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("title must be between 1 to 100 character");
+    });
+
+    test("create a task with length greater then 100" , async () => {
+        const res = await request(app).post("/tasks").send({title: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"});
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("title must be between 1 to 100 character");
+    });
+
+    test("create a task with body as array" , async () => {
+        const res = await request(app).post("/tasks").send([1,2,3,4]);
+        expect(res.status).toBe(400);
+        expect(res.body.message).toBe("request body must be an object");
+    });
+    
+});
+
+describe("patch on /tasks" , ()=>{
+    
+});
 afterAll(async () => {
     await pool.end();
 });
