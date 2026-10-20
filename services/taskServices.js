@@ -1,5 +1,5 @@
-import {AppError} from "./middleWares/error.js"
-import { addTaskRepo, deleteById, getTaskById, listTaskRepo, updateTaskRepo } from "./repository.js";
+import {AppError} from "../middleWares/error.js"
+import { addTaskRepo, deleteById, getTaskById, listTaskRepo, updateTaskRepo } from "../repository/taskRepository.js";
 
 //service to add task in database
 export async function addTask(taskTitle){

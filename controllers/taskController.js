@@ -1,4 +1,4 @@
-import {listTasks, UpdateTask , getTask , addTask ,  deleteTask} from "../taskServices.js";
+import {listTasks, UpdateTask , getTask , addTask ,  deleteTask} from "../services/taskServices.js";
 
 //controller for the patch requests
 export async function updateTaskControllers(req , res){

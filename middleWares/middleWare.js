@@ -1,17 +1,5 @@
 import { AppError } from "./error.js";
 
-//auth handeling(currentlly hard coded)
-export function auth(req , res , next){
-    const token = req.headers.authorization;
-    if(token!="secret123")
-    {
-        return res.status(401).json({
-            message: "unauthorized"
-        });
-    }
-    next();
-}
-
 
 //validatinng task id
 export function ValidateTaskId(req , res , next){

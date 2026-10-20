@@ -1,11 +1,9 @@
 import express from "express";
-import {auth, validateCompleteQuery, validateLimit, validateOffset, ValidatePatchBody, validatePostBody, validateSearch, validateSortAndOrder, ValidateTaskId} from "../middleWares/middleWare.js"; 
-import {getTaskController, postTaskController, updateTaskControllers , getAllTaskController, deleteTaskController} from "../controllers/task-controller.js";
+import {validateCompleteQuery, validateLimit, validateOffset, ValidatePatchBody, validatePostBody, validateSearch, validateSortAndOrder, ValidateTaskId} from "../middleWares/middleWare.js"; 
+import {getTaskController, postTaskController, updateTaskControllers , getAllTaskController, deleteTaskController} from "../controllers/taskController.js";
 const router = express.Router();
 
 
-//using authorization function 
-// router.use(auth);
 
 // handeling get all tasks req
 router.get("/" ,validateSortAndOrder , validateSearch , validateCompleteQuery , validateLimit , validateOffset , getAllTaskController);

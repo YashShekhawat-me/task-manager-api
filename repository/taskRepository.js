@@ -1,4 +1,4 @@
-import pool from "./db.js";
+import pool from "../db.js";
 
 export async function getTaskById(taskId){
     return await pool.query("select * from tasks where id = $1" , [taskId]);
