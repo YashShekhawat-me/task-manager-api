@@ -2,14 +2,14 @@ import {listTasks, UpdateTask , getTask , addTask ,  deleteTask} from "../servic
 
 //controller for the patch requests
 export async function updateTaskControllers(req , res){
-    const task = await UpdateTask(req.TaskId , req.body);
+    const task = await UpdateTask(req.TaskId , req.body , req.user.id);
     res.status(200).json(task);
 }
 
 //controller for the get task by id request
 export async function getTaskController(req , res)
 {
-    const task = await getTask(req.TaskId);
+    const task = await getTask(req.TaskId , req.user.id);
     res.status(200).json(task);
 }
 
@@ -17,7 +17,7 @@ export async function getTaskController(req , res)
 export async function postTaskController(req , res)
 {
     const title = req.body.title.trim();
-    const newTask = await addTask(title);
+    const newTask = await addTask(title , req.user.id);
     res.status(201).json({
         message: "task created!!",
         task: newTask
@@ -27,13 +27,13 @@ export async function postTaskController(req , res)
 //controller for the get all task request
 export async function getAllTaskController(req , res)
 {
-    res.json(await listTasks( req.completed, req.limit , req.offset , req.sort , req.order , req.search));
+    res.json(await listTasks( req.completed, req.limit , req.offset , req.sort , req.order , req.search , req.user.id));
 }
 
 
 export async function deleteTaskController(req , res)
 {
-    await deleteTask(req.TaskId);
+    await deleteTask(req.TaskId , req.user.id);
     res.status(200).json({
         message: "task deleted successfully",
         successful : true

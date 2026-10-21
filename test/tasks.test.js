@@ -429,6 +429,7 @@ describe("delete on /tasks" , () => {
         expect(res1.body.pagination.total).toBe(3);
     })
 })
+
 afterAll(async () => {
     await pool.end();
 });

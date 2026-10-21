@@ -1,6 +1,7 @@
 //imports needed
 import express from "express";
 import taskRoutes from "./routes/taskRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import { AppError, errorHandeler} from "./middleWares/error.js";
 import responseTime from "response-time";
 import cors from "cors";
@@ -18,12 +19,14 @@ if(process.env.NODE_ENV !== "test") {
     }));
 }
 
-
 //middleware to automatically parse incoming json request bodies in normal javascript objects
 app.use(express.json());
 
 //taking every req that starts with /tasks to taskroutes
 app.use("/tasks" ,taskRoutes);
+
+//taking every request that starts with /auth to authRoutes
+app.use("/auth" , authRoutes);
 
 //the home directory or the base directory so it shows a welcoming message
 app.get("/" , (req , res) => {
@@ -33,7 +36,7 @@ app.get("/" , (req , res) => {
     });
 });
 
-app.use((req , res , next) => { 
+app.use((req , res , next) => {
     return next(new AppError(`${req.path} path is not defined` , 404));
 })
 //error handeler so the client doesnt get our internal errors
