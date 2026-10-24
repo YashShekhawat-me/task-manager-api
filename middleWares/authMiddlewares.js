@@ -25,17 +25,15 @@ export function validateCredentials(req , res , next){
 }
 
 export function authenticateToken(req , res , next){
-    const authHeader = req.get('Authorization');
-    const match = /^Bearer\s+(\S+)$/i.exec(authHeader);
-    if(!match) {
+    const tok = req.cookies.access_token;
+    if(!tok) {
         return next(new AppError("Invalid or missing token" , 401));
     } 
-    const token = match[1];
     try{
         if(!process.env.JWT_SECRET){
             return next(new Error("JWT_SECRET not configured"));
         }
-        const decoded = jwt.verify(token , process.env.JWT_SECRET , { algorithms: ["HS256"] });
+        const decoded = jwt.verify(tok , process.env.JWT_SECRET , { algorithms: ["HS256"] });
         const UserId = Number(decoded.sub);
         if(!Number.isSafeInteger(UserId) || UserId <= 0){
             return next(new AppError("Invalid token" , 401))

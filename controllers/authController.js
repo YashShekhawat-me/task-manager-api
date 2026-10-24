@@ -15,13 +15,32 @@ export async function registerationController(req , res , next){
 
 export async function loginController(req , res , next) {
     try {
-        const user = await loginUser(req.body.email , req.body.password);
+        const response = await loginUser(req.body.email , req.body.password);
+        res.cookie("access_token" , response.token , {
+            httpOnly : true ,
+            secure : false,
+            sameSite : "lax",
+            path: "/" ,
+            maxAge: 10*60*1000
+        });
         return res.status(200).json({
             successful:true,
-            ...user
+            user : response.user
         })
     } catch(error) {
         return next(error);
     }
 }
 
+export async function logoutController(req , res , next){
+    res.cookie("access_token" , "" , {
+            httpOnly : true ,
+            secure : false,
+            sameSite : "lax",
+            path: "/" ,
+            maxAge: 0
+    });
+    res.status(200).json({
+        message : "logged out successful"
+    });
+}

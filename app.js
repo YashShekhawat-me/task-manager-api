@@ -5,6 +5,8 @@ import authRoutes from "./routes/authRoutes.js";
 import { AppError, errorHandeler} from "./middleWares/error.js";
 import responseTime from "response-time";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+
 
 //starting express in the js file
 const app = express();
@@ -13,15 +15,17 @@ app.use(cors({
     origin: "http://localhost:3000"
 }))
 //middlewares
+
+//middleware to automatically parse incoming json request bodies in normal javascript objects
+app.use(express.json());
+app.use(cookieParser());
+
+
 if(process.env.NODE_ENV !== "test") {
     app.use(responseTime((req, res, time) => {
         console.log(`[${req.method}] ${req.url} - ${time.toFixed(2)}ms`);
     }));
 }
-
-//middleware to automatically parse incoming json request bodies in normal javascript objects
-app.use(express.json());
-
 //taking every req that starts with /tasks to taskroutes
 app.use("/tasks" ,taskRoutes);
 
