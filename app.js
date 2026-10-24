@@ -32,6 +32,10 @@ app.use("/tasks" ,taskRoutes);
 //taking every request that starts with /auth to authRoutes
 app.use("/auth" , authRoutes);
 
+app.get('/.well-known/appspecific/com.chrome.devtools.json' , (req , res) => {
+    res.status(200).json({});
+})
+
 //the home directory or the base directory so it shows a welcoming message
 app.get("/" , (req , res) => {
     res.json({
