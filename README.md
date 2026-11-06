@@ -12,6 +12,7 @@ A REST API for user accounts and personal task management, built with Node.js, E
 - Request validation and centralized JSON error handling
 - PostgreSQL access organized into repositories, services, controllers, and routes
 - Response-time logging outside the test environment
+- Jest and Supertest integration tests covering authentication, task endpoints, validation, and per-user data isolation
 
 ## Tech Stack
 
@@ -47,7 +48,7 @@ A REST API for user accounts and personal task management, built with Node.js, E
 │   └── taskServices.js       # Task business logic
 ├── test/
 │   ├── helper.js             # Test database reset and seed helpers
-│   └── tasks.test.js         # API tests
+│   └── tasks.test.js         # Integration tests for auth, tasks, and ownership
 ├── .env                      # Local environment configuration (create locally)
 ├── .env.test                 # Test database configuration (create locally)
 ├── package.json
@@ -295,13 +296,29 @@ Common status codes include:
 
 ## Tests
 
-Run the Jest and Supertest suite:
+The suite uses Jest and Supertest and runs against a real PostgreSQL database, not mocks.
+
+### Set up the test database
+
+1. Create a separate database whose name ends in `_test` (for example `task_manager_test`) and create the `users` and `tasks` tables from the schema above.
+2. Point `.env.test` at it (see Environment Variables). The test helpers refuse to run if the database name does not end in `_test`.
+3. `.env.test` should also contain a `JWT_SECRET`. If it is missing, the tests fall back to a built-in test-only secret.
+
+### Run the tests
 
 ```bash
 npm test
 ```
 
-Tests use the `.env.test` PostgreSQL database and reset its task and user tables between tests.
+Before every test, the database is emptied and re-seeded with one user and three tasks, and the test logs in so its requests carry the `access_token` cookie, just like a real client.
+
+### What is covered
+
+- **Authentication:** registration (including email normalization, duplicate emails, and invalid input), login, the `/auth/me` route, and logout
+- **Protected routes:** every `/tasks` endpoint returns `401` without a valid cookie
+- **Task endpoints:** listing with filtering, search, sorting, and pagination; get by ID; create; update with `title`, `completed`, or both; and delete
+- **Validation:** invalid IDs, bodies, titles, and query parameters return the documented `400` errors
+- **Data isolation:** a second user cannot read, update, or delete the first user's tasks
 
 ## CORS
 
