@@ -73,7 +73,9 @@ export function ValidatePatchBody(req , res , next){
 
     //if all check passes then passed into next 
     // a valid object will be passed which will contain title or completed or both
-    req.body.title = req.body.title.trim();
+    if(isTitleThere){
+        req.body.title = req.body.title.trim();
+    }
     next();
 }
 
