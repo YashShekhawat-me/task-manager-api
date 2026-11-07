@@ -17,7 +17,6 @@ export async function listTasks(completed , limit , offset , sort , order , sear
 //service to get task by id
 export async function getTask(taskId , userId){
     const result = await getTaskById(taskId , userId);
-    console.log(result);
     if(result.rows.length === 0)
     {
         throw new AppError("Task not found" , 404);
