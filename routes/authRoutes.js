@@ -16,6 +16,13 @@ router.get("/me" , authenticateToken , async (req ,res) => {
     res.status(200).json({authentication : "successful" , user : req.user.id});    
 });
 
+router.get("/login" , (req , res) => {
+    res.json({
+        message: "send a post request at this route with your mail , and password in body",
+        format: "{ email : 'xyz@123.com' , password: 'your pass'}"
+    });
+});
+
 router.post("/logout" , logoutController);
 router.post("/login" , validateCredentials , loginController );
 router.post("/register" , validateCredentials , registerationController);

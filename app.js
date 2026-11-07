@@ -59,7 +59,9 @@ app.use("/health" , async (req , res) => {
 app.get("/" , (req , res) => {
     res.json({
         message : "welcome to the taskManager API",
-        command : "/tasks to see the current tasks"
+        login : "for login go to /auth/login",
+        register: "to register go to /auth/register",
+        currentUser: "to check current logged in user"
     });
 });
 
