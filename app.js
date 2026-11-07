@@ -6,6 +6,7 @@ import { AppError, errorHandeler} from "./middleWares/error.js";
 import responseTime from "response-time";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import pool from "./db.js";
 
 
 //starting express in the js file
@@ -34,6 +35,24 @@ app.use("/auth" , authRoutes);
 
 app.get('/.well-known/appspecific/com.chrome.devtools.json' , (req , res) => {
     res.status(200).json({});
+})
+
+app.use("/health" , async (req , res) => {
+    try {
+        await pool.query("SELECT 1");
+
+        res.status(200).json({
+            status: "OK",
+            database: "Connected"
+        });
+    } catch (error) {
+        console.error("Health check failed:", error.message);
+
+        res.status(503).json({
+            status: "ERROR",
+            database: "Disconnected"
+        });
+    }
 })
 
 //the home directory or the base directory so it shows a welcoming message
