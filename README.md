@@ -2,6 +2,14 @@
 
 A REST API for user accounts and personal task management, built with Node.js, Express, and PostgreSQL. Users can register and log in, then manage their own tasks through authenticated endpoints. Login uses a JWT stored in an HTTP-only cookie.
 
+## Live Demo
+
+The API is deployed on Render with a hosted PostgreSQL database on Neon:
+
+**https://task-manager-api-x28v.onrender.com**
+
+The first request after a period of inactivity may take up to a minute while the service wakes up. To try it, register and log in using the `curl` examples in [Authentication and Cookies](#authentication-and-cookies), replacing `http://localhost:3000` with the URL above.
+
 ## Features
 
 - User registration and login with password hashing via `bcrypt`
@@ -11,6 +19,8 @@ A REST API for user accounts and personal task management, built with Node.js, E
 - Task filtering, title search, sorting, and pagination
 - Request validation and centralized JSON error handling
 - PostgreSQL access organized into repositories, services, controllers, and routes
+- Health check endpoint (`GET /health`) that verifies the database connection
+- The server refuses to start if `JWT_SECRET` is not set
 - Response-time logging outside the test environment
 - Jest and Supertest integration tests covering authentication, task endpoints, validation, and per-user data isolation
 
@@ -22,6 +32,7 @@ A REST API for user accounts and personal task management, built with Node.js, E
 - `bcrypt` and `jsonwebtoken`
 - `dotenv`, `cookie-parser`, `cors`, and `response-time`
 - Jest and Supertest
+- Deployed on Render, with PostgreSQL hosted on Neon
 
 ## Project Structure
 
@@ -76,27 +87,24 @@ Create a PostgreSQL database for the application and configure the environment v
 Create a `.env` file in the project root:
 
 ```env
-DB_USER=postgres
-DB_HOST=localhost
-DB_NAME=taskmanager
-DB_PASSWORD=your_password
-DB_PORT=5432
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/taskmanager
 JWT_SECRET=replace_with_a_long_random_secret
 PORT=3000
 ```
 
-Jest uses `.env.test` for its test database. Create that file with separate test database credentials:
+- `DATABASE_URL` is the PostgreSQL connection string. For a hosted database such as Neon, use the connection string it provides, which includes `?sslmode=require`.
+- `JWT_SECRET` signs the login tokens. The server exits at startup if it is missing.
+- `PORT` is optional and defaults to `3000`.
+- `NODE_ENV=production` should be set in production. It turns on the `Secure` flag for the login cookie.
+
+Jest uses `.env.test` for its test database. Create that file with a separate test database:
 
 ```env
-DB_USER=postgres
-DB_HOST=localhost
-DB_NAME=task_manager_test
-DB_PASSWORD=your_test_database_password
-DB_PORT=5432
+DATABASE_URL=postgresql://postgres:your_test_password@localhost:5432/task_manager_test
 JWT_SECRET=another_long_random_secret
 ```
 
-The test helpers refuse to truncate a database unless its name ends in `_test`. Keep test credentials and data separate from development or production.
+The test helpers read the database name from `DATABASE_URL` and refuse to truncate any database whose name does not end in `_test`. Keep test credentials and data separate from development and production.
 
 ## Database Schema
 
@@ -126,19 +134,19 @@ Start the server:
 npm start
 ```
 
-Start in Node's watch mode during development:
+Start in Node's watch mode during development (this also sets `NODE_ENV=development`):
 
 ```bash
 npm run dev
 ```
 
-The server listens on port `3000` by default, or the port configured by `PORT`.
+The server listens on port `3000` by default, or the port configured by `PORT`. It will not start unless `JWT_SECRET` is set.
 
 ## Authentication and Cookies
 
 Register an account, then log in. A successful login sets an HTTP-only cookie named `access_token`; the token is not returned in the JSON body. Send this cookie with protected requests. Browsers handle same-origin cookies automatically; the `curl` examples below use a cookie jar.
 
-The current login cookie is configured with `HttpOnly`, `SameSite=Lax`, `Path=/`, and a 10-minute max age. The JWT itself expires after four hours. The current cookie configuration sets `Secure` to `false`; use HTTPS and review cookie/CORS settings before deploying to production.
+The login cookie is configured with `HttpOnly`, `SameSite=Lax`, `Path=/`, and a four-hour max age, matching the JWT's four-hour expiry. The `Secure` flag is enabled when `NODE_ENV` is `production`, so the cookie is only sent over HTTPS there, and disabled otherwise so the cookie works on `http://localhost`.
 
 ### `POST /auth/register`
 
@@ -269,8 +277,10 @@ curl -b cookies.txt -X DELETE http://localhost:3000/tasks/1
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/` | Welcome message |
+| `GET` | `/` | Welcome message and links to the auth routes |
+| `GET` | `/health` | Checks the database connection; returns `200` with `{"status":"OK","database":"Connected"}`, or `503` if the database is unreachable |
 | `GET` | `/auth` | Authentication route information |
+| `GET` | `/auth/login` | Instructions for the login request body |
 | `GET` | `/.well-known/appspecific/com.chrome.devtools.json` | Empty JSON response for Chrome DevTools discovery |
 
 ## Validation and Errors
@@ -282,7 +292,7 @@ Errors are returned as JSON, typically in this shape:
 ```json
 {
   "message": "Task not found",
-  "successfull": false
+  "successful": false
 }
 ```
 
@@ -300,8 +310,8 @@ The suite uses Jest and Supertest and runs against a real PostgreSQL database, n
 
 ### Set up the test database
 
-1. Create a separate database whose name ends in `_test` (for example `task_manager_test`) and create the `users` and `tasks` tables from the schema above.
-2. Point `.env.test` at it (see Environment Variables). The test helpers refuse to run if the database name does not end in `_test`.
+1. Create a separate database whose name ends in `_test` (for example `task_manager_test`) and create the `users` and `tasks` tables from the schema above. On Neon, a branch keeps its parent's database name, so create a new database inside the branch instead of reusing the default one.
+2. Set `DATABASE_URL` in `.env.test` to that database (see Environment Variables). The test helpers read the database name from this URL and refuse to run if it does not end in `_test`.
 3. `.env.test` should also contain a `JWT_SECRET`. If it is missing, the tests fall back to a built-in test-only secret.
 
 ### Run the tests
@@ -319,6 +329,15 @@ Before every test, the database is emptied and re-seeded with one user and three
 - **Task endpoints:** listing with filtering, search, sorting, and pagination; get by ID; create; update with `title`, `completed`, or both; and delete
 - **Validation:** invalid IDs, bodies, titles, and query parameters return the documented `400` errors
 - **Data isolation:** a second user cannot read, update, or delete the first user's tasks
+
+## Deployment
+
+The live API runs on Render as a Node web service:
+
+- **Start command:** `npm start`
+- **Environment variables:** `DATABASE_URL` (the Neon connection string), `JWT_SECRET`, and `NODE_ENV=production`
+- **Database:** create the `users` and `tasks` tables from the schema above in the hosted database before the first request
+- **Verify:** open `/health` after each deploy to confirm the app can reach the database
 
 ## CORS
 

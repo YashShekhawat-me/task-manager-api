@@ -17,26 +17,26 @@ export function errorHandeler( error, req, res, next ){
     if(error instanceof SyntaxError && error.status === 400 && 'body' in error){
         return res.status(400).json({
             message: "Malformed JSON payload. Please verify your syntax",
-            successfull: false
+            successful: false
         });
     }
 
     if(error instanceof AppError){
         return res.status(error.status).json({
             message : error.message , 
-            successfull : false
+            successful : false
         });
     }
 
     if(error.status >= 400 && error.status < 500 && error.expose ){
         return res.status(error.status).json({
             message: error.message, 
-            successfull: false
+            successful: false
         });
     }
 
     return res.status(500).json({
         message : "internal server error",
-        successfull : false
+        successful : false
     });
 }
