@@ -1,8 +1,9 @@
 import pool from "../db.js";
 import bcrypt from "bcrypt";
 
+const dbName = new URL(process.env.DATABASE_URL).pathname.slice(1);
 export async function resetDB() {
-    if (!process.env.DB_NAME?.endsWith("_test")) {
+    if (!dbName?.endsWith("_test")) {
         throw new Error(
             "refusing to run tests on a non-test database"
         );

@@ -11,7 +11,6 @@ import pool from "./db.js";
 
 //starting express in the js file
 const app = express();
-
 app.use(cors({
     origin: "http://localhost:3000"
 }))
@@ -37,7 +36,7 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json' , (req , res) => {
     res.status(200).json({});
 })
 
-app.use("/health" , async (req , res) => {
+app.get("/health" , async (req , res) => {
     try {
         await pool.query("SELECT 1");
 

@@ -16,12 +16,13 @@ export async function registerationController(req , res , next){
 export async function loginController(req , res , next) {
     try {
         const response = await loginUser(req.body.email , req.body.password);
+        const secureEnv = process.env.NODE_ENV === "production";
         res.cookie("access_token" , response.token , {
             httpOnly : true ,
-            secure : false,
+            secure : secureEnv,
             sameSite : "lax",
             path: "/" ,
-            maxAge: 10*60*1000
+            maxAge: 4*60*60*1000
         });
         return res.status(200).json({
             successful:true,
@@ -33,9 +34,10 @@ export async function loginController(req , res , next) {
 }
 
 export async function logoutController(req , res , next){
+    const secureEnv = process.env.NODE_ENV === "production";
     res.cookie("access_token" , "" , {
             httpOnly : true ,
-            secure : false,
+            secure : secureEnv,
             sameSite : "lax",
             path: "/" ,
             maxAge: 0
