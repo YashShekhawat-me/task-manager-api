@@ -60,7 +60,7 @@ app.get("/" , (req , res) => {
         message : "welcome to the taskManager API",
         login : "for login go to /auth/login",
         register: "to register go to /auth/register",
-        currentUser: "to check current logged in user"
+        currentUser: "to check current logged in user get /auth/me"
     });
 });
 
