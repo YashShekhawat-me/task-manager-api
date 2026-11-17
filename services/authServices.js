@@ -3,6 +3,7 @@ import {createUserRepo, findUserByEmailRepo} from "../repository/userRepository.
 import {AppError} from "../middleWares/error.js";
 import jwt from "jsonwebtoken";
 
+//service for registering user
 export async function registerUser(email , password){
     const passwordHash = await bcrypt.hash(password , 12);
     try {
@@ -16,6 +17,7 @@ export async function registerUser(email , password){
     }
 }
 
+//service to login users
 export async function loginUser(email , password){
     const noramlizedEmail = email.trim().toLowerCase();
     const result = await findUserByEmailRepo(noramlizedEmail);

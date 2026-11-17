@@ -5,7 +5,7 @@ dotenv.config({
 });
 const {Pool} = pg;
 
-//hidden database host username , passwords using .env file
+// making a connection pool to neon pg databse
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });

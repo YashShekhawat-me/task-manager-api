@@ -20,8 +20,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-
+// if condition for not logging when in test suite
 if(process.env.NODE_ENV !== "test") {
+    // logging the response time
     app.use(responseTime((req, res, time) => {
         console.log(`[${req.method}] ${req.url} - ${time.toFixed(2)}ms`);
     }));
@@ -32,10 +33,7 @@ app.use("/tasks" ,taskRoutes);
 //taking every request that starts with /auth to authRoutes
 app.use("/auth" , authRoutes);
 
-app.get('/.well-known/appspecific/com.chrome.devtools.json' , (req , res) => {
-    res.status(200).json({});
-})
-
+// health check the database
 app.get("/health" , async (req , res) => {
     try {
         await pool.query("SELECT 1");
@@ -64,9 +62,11 @@ app.get("/" , (req , res) => {
     });
 });
 
+// handelling unknown paths
 app.use((req , res , next) => {
     return next(new AppError(`${req.path} path is not defined` , 404));
 })
+
 //error handeler so the client doesnt get our internal errors
 app.use(errorHandeler);
 
